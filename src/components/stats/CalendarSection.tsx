@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSessions } from "@/hooks/useFocusData";
-import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags } from "@/lib/focus";
+import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
+import { useTimeUnit } from "@/hooks/useTimeUnit";
 import { Button } from "@/components/ui/button";
 import { SessionEditDialog } from "../focus/SessionEditDialog";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
@@ -52,12 +53,13 @@ function tagDist(sessions: SessionWithTags[]) {
     }
   }
   return Array.from(map.entries())
-    .map(([name, value]) => ({ name, value: Math.round(value) }))
+    .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
 }
 
 export function CalendarSection() {
   const { data: sessions = [] } = useSessions();
+  const [unit] = useTimeUnit();
   const [monthAnchor, setMonthAnchor] = useState(() => startOfMonth(new Date()));
   const [selection, setSelection] = useState<Selection>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -217,6 +219,7 @@ export function CalendarSection() {
                 (s) => localDayKey(s.start_time) === selection.key
               )}
               onEdit={setEditId}
+              unit={unit}
             />
           ) : (
             <WeekPanel
@@ -229,6 +232,7 @@ export function CalendarSection() {
                   t < addDays(selection.weekEnd, 1).getTime()
                 );
               })}
+              unit={unit}
             />
           )}
         </div>
@@ -243,10 +247,12 @@ function DayPanel({
   date,
   sessions,
   onEdit,
+  unit,
 }: {
   date: Date;
   sessions: SessionWithTags[];
   onEdit: (id: string) => void;
+  unit: TimeUnit;
 }) {
   const total = sessions.reduce((a, s) => a + s.duration_seconds, 0);
   const dist = tagDist(sessions);
@@ -263,7 +269,7 @@ function DayPanel({
           })}
         </h3>
         <div className="text-sm text-muted-foreground">
-          <span className="font-mono-num text-foreground">{formatHumanDuration(total)}</span>
+          <span className="font-mono-num text-foreground">{formatDuration(total, unit)}</span>
           {" · "}{sessions.length} sessions · {timer}T / {sw}S
         </div>
       </div>
@@ -281,7 +287,7 @@ function DayPanel({
                 tickLine={false}
               />
               <Tooltip
-                formatter={(v: number) => formatHumanDuration(v)}
+                formatter={(v: number) => formatDuration(v, unit)}
                 contentStyle={{
                   background: "hsl(var(--background))",
                   border: "1px solid hsl(var(--border))",
@@ -341,7 +347,7 @@ function DayPanel({
                 </div>
               </div>
               <span className="font-mono-num text-sm">
-                {formatHumanDuration(s.duration_seconds)}
+                {formatDuration(s.duration_seconds, unit)}
               </span>
             </button>
           </li>
@@ -355,10 +361,12 @@ function WeekPanel({
   weekStart,
   weekEnd,
   sessions,
+  unit,
 }: {
   weekStart: Date;
   weekEnd: Date;
   sessions: SessionWithTags[];
+  unit: TimeUnit;
 }) {
   const total = sessions.reduce((a, s) => a + s.duration_seconds, 0);
   const dist = tagDist(sessions);
@@ -371,7 +379,7 @@ function WeekPanel({
     const v = sessions
       .filter((s) => localDayKey(s.start_time) === k)
       .reduce((a, s) => a + s.duration_seconds, 0);
-    return { day: WEEKDAYS[i], value: Math.round(v) };
+    return { day: WEEKDAYS[i], value: v };
   });
 
   return (
@@ -383,7 +391,7 @@ function WeekPanel({
           {weekEnd.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
         </h3>
         <div className="text-sm text-muted-foreground">
-          <span className="font-mono-num text-foreground">{formatHumanDuration(total)}</span>
+          <span className="font-mono-num text-foreground">{formatDuration(total, unit)}</span>
           {" · "}most used: <span className="text-foreground">{mostUsed}</span>
         </div>
       </div>
@@ -399,7 +407,7 @@ function WeekPanel({
               />
               <YAxis hide />
               <Tooltip
-                formatter={(v: number) => formatHumanDuration(v)}
+                formatter={(v: number) => formatDuration(v, unit)}
                 contentStyle={{
                   background: "hsl(var(--background))",
                   border: "1px solid hsl(var(--border))",
@@ -430,7 +438,7 @@ function WeekPanel({
                   tickLine={false}
                 />
                 <Tooltip
-                  formatter={(v: number) => formatHumanDuration(v)}
+                  formatter={(v: number) => formatDuration(v, unit)}
                   contentStyle={{
                     background: "hsl(var(--background))",
                     border: "1px solid hsl(var(--border))",

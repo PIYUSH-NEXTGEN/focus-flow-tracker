@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useSessions } from "@/hooks/useFocusData";
-import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags } from "@/lib/focus";
+import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
+import { useTimeUnit } from "@/hooks/useTimeUnit";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 interface Props {
@@ -22,12 +23,13 @@ function tagDistribution(sessions: SessionWithTags[]) {
     }
   }
   return Array.from(map.entries())
-    .map(([name, value]) => ({ name, value: Math.round(value) }))
+    .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
 }
 
 export function TodayStats({ date }: Props) {
   const { data: sessions = [] } = useSessions();
+  const [unit] = useTimeUnit();
   const day = date ?? new Date();
   const dayKey = localDayKey(day);
 
@@ -44,7 +46,7 @@ export function TodayStats({ date }: Props) {
 
   return (
     <div className="grid gap-6 md:grid-cols-3">
-      <StatCard label="Total focus" value={formatHumanDuration(totalSec)} />
+      <StatCard label="Total focus" value={formatDuration(totalSec, unit)} />
       <StatCard label="Sessions" value={todays.length.toString()} />
       <StatCard
         label="Mode"
@@ -88,7 +90,7 @@ export function TodayStats({ date }: Props) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(v: number) => formatHumanDuration(v)}
+                    formatter={(v: number) => formatDuration(v, unit)}
                     contentStyle={{
                       background: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",

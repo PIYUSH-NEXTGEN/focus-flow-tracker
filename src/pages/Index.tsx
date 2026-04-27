@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { TimeUnitToggle } from "@/components/TimeUnitToggle";
 import { FocusStation } from "@/components/focus/FocusStation";
 import { TodayStats } from "@/components/stats/TodayStats";
 import { CalendarSection } from "@/components/stats/CalendarSection";
@@ -43,9 +45,11 @@ export default function Index() {
             <span className="font-semibold tracking-tight">Focus Meter</span>
           </div>
           <div className="flex items-center gap-3">
+            <TimeUnitToggle />
             <span className="hidden sm:inline text-xs text-muted-foreground">
               {user?.email}
             </span>
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"

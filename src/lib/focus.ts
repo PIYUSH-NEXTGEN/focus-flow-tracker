@@ -2,6 +2,8 @@
 
 export type Mode = "timer" | "stopwatch";
 
+export type TimeUnit = "minutes" | "hours";
+
 export interface PauseEvent {
   paused_at: number; // ms epoch
   resumed_at: number | null;
@@ -79,6 +81,16 @@ export function parseHMS(input: string): number {
   return h * 3600 + m * 60 + s;
 }
 
+export function secondsToUnit(seconds: number, unit: TimeUnit): number {
+  if (unit === "minutes") return seconds / 60;
+  return seconds / 3600;
+}
+
+export function formatDuration(seconds: number, unit: TimeUnit): string {
+  const value = secondsToUnit(seconds, unit);
+  return value.toFixed(2) + (unit === "minutes" ? " min" : " hr");
+}
+
 export function totalPausedMs(events: PauseEvent[], nowMs: number): number {
   let total = 0;
   for (const ev of events) {
@@ -94,7 +106,16 @@ export function isPaused(events: PauseEvent[]): boolean {
 }
 
 export function localDayKey(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
+  let date: Date;
+  if (typeof d === "string") {
+    // ISO strings are in UTC, extract local date components
+    const iso = new Date(d);
+    // Convert UTC to local time
+    const localDate = new Date(iso.getTime() - iso.getTimezoneOffset() * 60000);
+    date = localDate;
+  } else {
+    date = d;
+  }
   const y = date.getFullYear();
   const m = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");

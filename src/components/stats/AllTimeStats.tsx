@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useSessions } from "@/hooks/useFocusData";
-import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags } from "@/lib/focus";
+import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
+import { useTimeUnit } from "@/hooks/useTimeUnit";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 
 function tagDist(sessions: SessionWithTags[]) {
@@ -14,7 +15,7 @@ function tagDist(sessions: SessionWithTags[]) {
     }
   }
   return Array.from(map.entries())
-    .map(([name, value]) => ({ name, value: Math.round(value) }))
+    .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
 }
 
@@ -41,6 +42,7 @@ function computeStreaks(daySet: Set<string>): { longest: number; average: number
 
 export function AllTimeStats() {
   const { data: sessions = [] } = useSessions();
+  const [unit] = useTimeUnit();
 
   const now = new Date();
   const monthSessions = sessions.filter((s) => {
@@ -86,27 +88,27 @@ export function AllTimeStats() {
   return (
     <div className="space-y-8">
       <div className="grid gap-3 md:grid-cols-3">
-        <Tile label={`This month (${now.toLocaleDateString(undefined, { month: "short" })})`} value={formatHumanDuration(monthTotal)} sub={`${monthSessions.length} sessions`} />
-        <Tile label={`This year (${now.getFullYear()})`} value={formatHumanDuration(yearTotal)} sub={`${yearSessions.length} sessions`} />
-        <Tile label="All time" value={formatHumanDuration(allTotal)} sub={`${sessions.length} sessions`} />
+        <Tile label={`This month (${now.toLocaleDateString(undefined, { month: "short" })})`} value={formatDuration(monthTotal, unit)} sub={`${monthSessions.length} sessions`} />
+        <Tile label={`This year (${now.getFullYear()})`} value={formatDuration(yearTotal, unit)} sub={`${yearSessions.length} sessions`} />
+        <Tile label="All time" value={formatDuration(allTotal, unit)} sub={`${sessions.length} sessions`} />
       </div>
 
       <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-5">
         <Tile
           label="Highest day"
-          value={highest ? formatHumanDuration(highest.value) : "—"}
+          value={highest ? formatDuration(highest.value, unit) : "—"}
           sub={highest ? new Date(highest.key + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : ""}
         />
         <Tile label="Total sessions" value={sessions.length.toString()} />
-        <Tile label="Avg session" value={formatHumanDuration(avgSession)} />
+        <Tile label="Avg session" value={formatDuration(avgSession, unit)} />
         <Tile label="Longest streak" value={`${longest}d`} />
         <Tile label="Avg streak" value={`${average}d`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <DistCard title="Month tags" data={monthDist} />
-        <DistCard title="Year tags" data={yearDist} />
-        <DistCard title="All-time tags" data={allDist} />
+        <DistCard title="Month tags" data={monthDist} unit={unit} />
+        <DistCard title="Year tags" data={yearDist} unit={unit} />
+        <DistCard title="All-time tags" data={allDist} unit={unit} />
       </div>
     </div>
   );
@@ -124,7 +126,7 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-function DistCard({ title, data }: { title: string; data: { name: string; value: number }[] }) {
+function DistCard({ title, data, unit }: { title: string; data: { name: string; value: number }[]; unit: TimeUnit }) {
   return (
     <div className="hairline rounded-2xl p-5">
       <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-muted-foreground mb-4">
@@ -148,7 +150,7 @@ function DistCard({ title, data }: { title: string; data: { name: string; value:
                 tickLine={false}
               />
               <Tooltip
-                formatter={(v: number) => formatHumanDuration(v)}
+                formatter={(v: number) => formatDuration(v, unit)}
                 contentStyle={{
                   background: "hsl(var(--background))",
                   border: "1px solid hsl(var(--border))",

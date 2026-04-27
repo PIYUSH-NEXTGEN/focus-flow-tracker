@@ -5,7 +5,8 @@ import { CircularProgress } from "./CircularProgress";
 import { TagSelector } from "./TagSelector";
 import { useFocusTimer, type ActiveSession } from "@/hooks/useFocusTimer";
 import { useCreateSession } from "@/hooks/useFocusData";
-import { formatHMS, parseHMS, type Mode } from "@/lib/focus";
+import { formatHMS, parseHMS, type Mode, formatDuration, type TimeUnit } from "@/lib/focus";
+import { useTimeUnit } from "@/hooks/useTimeUnit";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SessionEditDialog } from "./SessionEditDialog";
@@ -13,6 +14,7 @@ import { SessionEditDialog } from "./SessionEditDialog";
 export function FocusStation() {
   const timer = useFocusTimer();
   const createSession = useCreateSession();
+  const [unit] = useTimeUnit();
 
   const [mode, setMode] = useState<Mode>("timer");
   const [hms, setHms] = useState("00:25:00");
@@ -31,13 +33,13 @@ export function FocusStation() {
 
   const display = useMemo(() => {
     if (!timer.active) {
-      return mode === "timer" ? formatHMS(targetSeconds) : "00:00:00";
+      return mode === "timer" ? formatDuration(targetSeconds, unit) : formatDuration(0, unit);
     }
     if (timer.active.mode === "timer" && timer.active.targetSeconds !== null) {
-      return formatHMS(Math.max(0, timer.active.targetSeconds - timer.elapsedSeconds));
+      return formatDuration(Math.max(0, timer.active.targetSeconds - timer.elapsedSeconds), unit);
     }
-    return formatHMS(timer.elapsedSeconds);
-  }, [timer.active, timer.elapsedSeconds, mode, targetSeconds]);
+    return formatDuration(timer.elapsedSeconds, unit);
+  }, [timer.active, timer.elapsedSeconds, mode, targetSeconds, unit]);
 
   const progress = useMemo(() => {
     if (!timer.active) return mode === "timer" ? 0 : null;
@@ -82,7 +84,7 @@ export function FocusStation() {
       (acc, ev) => acc + Math.max(0, (ev.resumed_at ?? endMs) - ev.paused_at),
       0
     );
-    let durationSec = Math.max(1, Math.floor((endMs - s.startMs - totalPaused) / 1000));
+    let durationSec = Math.max(0, (endMs - s.startMs - totalPaused) / 1000);
     // For timer that hit target, cap at target.
     if (s.mode === "timer" && s.targetSeconds) {
       durationSec = Math.min(durationSec, s.targetSeconds);
