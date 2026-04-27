@@ -13,7 +13,20 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
       colors: {
+        graph: {
+          green: "hsl(var(--graph-green))",
+          blue: "hsl(var(--graph-blue))",
+          purple: "hsl(var(--graph-purple))",
+          orange: "hsl(var(--graph-orange))",
+          red: "hsl(var(--graph-red))",
+          cyan: "hsl(var(--graph-cyan))",
+          yellow: "hsl(var(--graph-yellow))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
