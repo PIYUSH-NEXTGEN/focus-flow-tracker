@@ -105,7 +105,7 @@ export function useCreateSession() {
         .select()
         .single();
       if (error) throw error;
-      const sessionId = (data as SessionRow).id;
+      const sessionId = (data as { id: string }).id;
       if (input.tag_ids.length > 0) {
         const { error: tagErr } = await supabase
           .from("session_tags")
