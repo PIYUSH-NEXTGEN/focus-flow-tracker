@@ -1,16 +1,106 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useEffect } from "react";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { FocusStation } from "@/components/focus/FocusStation";
+import { TodayStats } from "@/components/stats/TodayStats";
+import { CalendarSection } from "@/components/stats/CalendarSection";
+import { AllTimeStats } from "@/components/stats/AllTimeStats";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+export default function Index() {
+  const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    document.title = "Focus Meter — track your deep work";
+    const desc = document.querySelector('meta[name="description"]');
+    const content = "Focus Meter: a minimal timer and stopwatch for tracking deep work, with tags, calendar, and analytics.";
+    if (desc) desc.setAttribute("content", content);
+    else {
+      const m = document.createElement("meta");
+      m.name = "description";
+      m.content = content;
+      document.head.appendChild(m);
+    }
+    // canonical
+    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = window.location.origin + "/";
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen">
+      {/* Top bar */}
+      <header className="sticky top-0 z-30 backdrop-blur-md bg-background/80 border-b border-border">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-foreground text-background grid place-items-center font-mono-num text-[11px]">
+              FM
+            </div>
+            <span className="font-semibold tracking-tight">Focus Meter</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-xs text-muted-foreground">
+              {user?.email}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={signOut}
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 pb-24">
+        {/* Section 1: Focus station */}
+        <section className="pt-12 pb-16">
+          <h1 className="sr-only">Focus Meter</h1>
+          <FocusStation />
+        </section>
+
+        {/* Section 2: Today */}
+        <section className="py-10 border-t border-border">
+          <SectionHeading
+            eyebrow="Today"
+            title={new Date().toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          />
+          <TodayStats />
+        </section>
+
+        {/* Section 3: Calendar */}
+        <section className="py-10 border-t border-border">
+          <SectionHeading eyebrow="Calendar" title="Browse your history" />
+          <CalendarSection />
+        </section>
+
+        {/* Section 4: All-time */}
+        <section className="py-10 border-t border-border">
+          <SectionHeading eyebrow="Stats" title="All-time analytics" />
+          <AllTimeStats />
+        </section>
+      </main>
     </div>
   );
-};
+}
 
-const Index = PlaceholderIndex;
-
-export default Index;
+function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="mb-6">
+      <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        {eyebrow}
+      </div>
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h2>
+    </div>
+  );
+}
