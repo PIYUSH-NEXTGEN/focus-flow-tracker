@@ -15,7 +15,7 @@ export function CircularProgress({ progress, display, subtitle, paused, size = 3
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = progress === null ? 0 : Math.max(0, Math.min(1, progress));
-  const dash = circumference * clamped;
+  const dashOffset = circumference * (1 - clamped);
 
   return (
     <div
@@ -40,8 +40,9 @@ export function CircularProgress({ progress, display, subtitle, paused, size = 3
             stroke="hsl(var(--foreground))"
             strokeWidth={stroke}
             strokeLinecap="round"
-            strokeDasharray={`${dash} ${circumference - dash}`}
-            style={{ transition: "stroke-dasharray 250ms linear" }}
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            style={{ transition: "stroke-dashoffset 220ms linear" }}
           />
         ) : (
           // Stopwatch: a small rotating arc
@@ -60,7 +61,10 @@ export function CircularProgress({ progress, display, subtitle, paused, size = 3
         )}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className={`font-mono-num text-5xl md:text-6xl font-semibold ${paused ? "opacity-50" : ""}`}>
+        <div
+          key={display}
+          className={`fm-time-tick font-mono-num text-5xl md:text-6xl font-semibold ${paused ? "opacity-50" : ""}`}
+        >
           {display}
         </div>
         {subtitle && (

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { CSSProperties } from "react";
 import { useSessions } from "@/hooks/useFocusData";
 import { colorForTag, formatHumanDuration, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
 import { useTimeUnit } from "@/hooks/useTimeUnit";
@@ -63,7 +64,7 @@ export function TodayStats({ date }: Props) {
   const dist = useMemo(() => tagDistribution(todaysSessions), [todaysSessions]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="fm-page-enter grid gap-6 md:grid-cols-3" style={{ "--fm-delay": "80ms" } as CSSProperties}>
       <StatCard label="Total focus" value={formatDuration(totalSec, unit)} />
       <StatCard label="Sessions" value={todaysSessions.length.toString()} />
       <StatCard
@@ -99,6 +100,9 @@ export function TodayStats({ date }: Props) {
                     outerRadius={90}
                     paddingAngle={2}
                     stroke="hsl(var(--background))"
+                    isAnimationActive
+                    animationDuration={500}
+                    animationEasing="ease-out"
                   >
                     {dist.map((d) => (
                       <Cell

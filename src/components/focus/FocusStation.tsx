@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { Play, Pause, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircularProgress } from "./CircularProgress";
@@ -139,7 +140,7 @@ export function FocusStation() {
               disabled={sessionRunning}
               onClick={() => setMode(m)}
               className={cn(
-                "px-5 py-1.5 rounded-full text-sm font-medium transition capitalize",
+                "fm-interactive px-5 py-1.5 rounded-full text-sm font-medium transition capitalize",
                 mode === m ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
                 sessionRunning && "opacity-60 cursor-not-allowed"
               )}
@@ -151,7 +152,7 @@ export function FocusStation() {
       </div>
 
       {/* Circular display */}
-      <div className="flex justify-center">
+      <div className="fm-page-enter flex justify-center" style={{ "--fm-delay": "0ms" } as CSSProperties}>
         <CircularProgress
           progress={progress}
           display={display}
@@ -176,7 +177,7 @@ export function FocusStation() {
       )}
 
       {/* Tags */}
-      <div className="mt-8">
+      <div className="fm-page-enter mt-8" style={{ "--fm-delay": "120ms" } as CSSProperties}>
         <TagSelector
           selectedIds={selectedTagIds}
           onChange={(ids) => {
@@ -187,7 +188,7 @@ export function FocusStation() {
       </div>
 
       {/* Controls */}
-      <div className="mt-10 flex justify-center items-center gap-3">
+      <div className="fm-page-enter mt-10 flex justify-center items-center gap-3" style={{ "--fm-delay": "200ms" } as CSSProperties}>
         {!sessionRunning ? (
           <Button size="lg" onClick={handleStart} className="rounded-full h-14 px-8">
             <Play className="h-5 w-5 mr-2 fill-current" /> Start

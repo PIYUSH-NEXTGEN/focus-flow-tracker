@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { CSSProperties } from "react";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,9 +9,14 @@ import { FocusStation } from "@/components/focus/FocusStation";
 import { TodayStats } from "@/components/stats/TodayStats";
 import { CalendarSection } from "@/components/stats/CalendarSection";
 import { AllTimeStats } from "@/components/stats/AllTimeStats";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { cn } from "@/lib/utils";
 
 export default function Index() {
   const { user, signOut } = useAuth();
+  const todayReveal = useScrollReveal();
+  const calendarReveal = useScrollReveal();
+  const statsReveal = useScrollReveal();
 
   useEffect(() => {
     document.title = "Focus Meter — track your deep work";
@@ -64,13 +70,20 @@ export default function Index() {
 
       <main className="max-w-5xl mx-auto px-6 pb-24">
         {/* Section 1: Focus station */}
-        <section className="pt-12 pb-16">
+        <section className="fm-page-enter pt-12 pb-16" style={{ "--fm-delay": "0ms" } as CSSProperties}>
           <h1 className="sr-only">Focus Meter</h1>
           <FocusStation />
         </section>
 
         {/* Section 2: Today */}
-        <section className="py-10 border-t border-border">
+        <section
+          ref={todayReveal.ref}
+          className={cn(
+            "fm-page-enter fm-reveal py-10 border-t border-border",
+            todayReveal.isVisible && "fm-reveal-visible"
+          )}
+          style={{ "--fm-delay": "120ms" } as CSSProperties}
+        >
           <SectionHeading
             eyebrow="Today"
             title={new Date().toLocaleDateString(undefined, {
@@ -83,13 +96,27 @@ export default function Index() {
         </section>
 
         {/* Section 3: Calendar */}
-        <section className="py-10 border-t border-border">
+        <section
+          ref={calendarReveal.ref}
+          className={cn(
+            "fm-page-enter fm-reveal py-10 border-t border-border",
+            calendarReveal.isVisible && "fm-reveal-visible"
+          )}
+          style={{ "--fm-delay": "220ms" } as CSSProperties}
+        >
           <SectionHeading eyebrow="Calendar" title="Browse your history" />
           <CalendarSection />
         </section>
 
         {/* Section 4: All-time */}
-        <section className="py-10 border-t border-border">
+        <section
+          ref={statsReveal.ref}
+          className={cn(
+            "fm-page-enter fm-reveal py-10 border-t border-border",
+            statsReveal.isVisible && "fm-reveal-visible"
+          )}
+          style={{ "--fm-delay": "300ms" } as CSSProperties}
+        >
           <SectionHeading eyebrow="Stats" title="All-time analytics" />
           <AllTimeStats />
         </section>

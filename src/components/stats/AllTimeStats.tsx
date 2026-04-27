@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { CSSProperties } from "react";
 import { useSessions } from "@/hooks/useFocusData";
 import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
 import { useTimeUnit } from "@/hooks/useTimeUnit";
@@ -86,7 +87,7 @@ export function AllTimeStats() {
   const allDist = useMemo(() => tagDist(sessions), [sessions]);
 
   return (
-    <div className="space-y-8">
+    <div className="fm-page-enter space-y-8" style={{ "--fm-delay": "90ms" } as CSSProperties}>
       <div className="grid gap-3 md:grid-cols-3">
         <Tile label={`This month (${now.toLocaleDateString(undefined, { month: "short" })})`} value={formatDuration(monthTotal, unit)} sub={`${monthSessions.length} sessions`} />
         <Tile label={`This year (${now.getFullYear()})`} value={formatDuration(yearTotal, unit)} sub={`${yearSessions.length} sessions`} />
@@ -159,7 +160,7 @@ function DistCard({ title, data, unit }: { title: string; data: { name: string; 
                 }}
                 cursor={{ fill: "hsl(var(--muted))" }}
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive animationDuration={500} animationEasing="ease-out">
                 {data.map((d) => (
                   <Cell
                     key={d.name}

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSessions } from "@/hooks/useFocusData";
 import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, formatTime, type TimeUnit } from "@/lib/focus";
@@ -93,7 +94,7 @@ export function CalendarSection() {
   });
 
   return (
-    <div className="hairline rounded-2xl p-6">
+    <div className="fm-page-enter hairline rounded-2xl p-6" style={{ "--fm-delay": "60ms" } as CSSProperties}>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">{monthLabel}</h2>
         <div className="flex items-center gap-1">
@@ -157,7 +158,7 @@ export function CalendarSection() {
                   )
                 }
                 className={cn(
-                  "w-6 grid place-items-center rounded text-[10px] text-muted-foreground hover:bg-accent transition",
+                  "fm-interactive w-6 grid place-items-center rounded text-[10px] text-muted-foreground hover:bg-accent transition",
                   weekActive && "bg-foreground text-background hover:bg-foreground"
                 )}
                 aria-label={`Week of ${weekStart.toDateString()}`}
@@ -183,7 +184,7 @@ export function CalendarSection() {
                       )
                     }
                     className={cn(
-                      "aspect-square rounded-md text-xs flex flex-col items-center justify-between p-1.5 border transition",
+                      "fm-interactive aspect-square rounded-md text-xs flex flex-col items-center justify-between p-1.5 border transition",
                       inMonth ? "border-border" : "border-transparent text-muted-foreground/50",
                       dayActive
                         ? "bg-foreground text-background border-foreground"
@@ -211,7 +212,7 @@ export function CalendarSection() {
 
       {/* Drill-down panel */}
       {selection && (
-        <div className="mt-6 border-t border-border pt-6">
+        <div className="mt-6 border-t border-border pt-6 fm-page-enter" style={{ "--fm-delay": "0ms" } as CSSProperties}>
           {selection.kind === "day" ? (
             <DayPanel
               date={selection.date}
@@ -296,7 +297,7 @@ function DayPanel({
                 }}
                 cursor={{ fill: "hsl(var(--muted))" }}
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive animationDuration={500} animationEasing="ease-out">
                 {dist.map((d) => (
                   <Cell
                     key={d.name}
@@ -319,7 +320,7 @@ function DayPanel({
             <button
               type="button"
               onClick={() => onEdit(s.id)}
-              className="w-full flex items-center justify-between py-3 text-left hover:bg-accent/40 -mx-2 px-2 rounded transition"
+              className="fm-interactive w-full flex items-center justify-between py-3 text-left hover:bg-accent/40 -mx-2 px-2 rounded transition"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-xs font-mono-num text-muted-foreground w-12">
@@ -416,7 +417,7 @@ function WeekPanel({
                 }}
                 cursor={{ fill: "hsl(var(--muted))" }}
               />
-              <Bar dataKey="value" fill="hsl(var(--foreground))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="value" fill="hsl(var(--foreground))" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={500} animationEasing="ease-out" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -447,7 +448,7 @@ function WeekPanel({
                   }}
                   cursor={{ fill: "hsl(var(--muted))" }}
                 />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive animationDuration={500} animationEasing="ease-out">
                   {dist.map((d) => (
                     <Cell
                       key={d.name}

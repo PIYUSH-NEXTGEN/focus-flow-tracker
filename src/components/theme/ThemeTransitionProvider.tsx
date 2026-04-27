@@ -33,6 +33,14 @@ export function ThemeTransitionProvider({ children }: { children: ReactNode }) {
     };
   }, [clearTimer]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("theme-transition-active", isAnimating);
+    return () => {
+      root.classList.remove("theme-transition-active");
+    };
+  }, [isAnimating]);
+
   const startThemeTransition = useCallback(
     (nextTheme: ThemeMode, applyTheme: ApplyThemeFn) => {
       if (isAnimating) return;

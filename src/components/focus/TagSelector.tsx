@@ -56,11 +56,11 @@ export function TagSelector({ selectedIds, onChange, readOnly, size = "md" }: Pr
             onClick={() => toggle(t.id)}
             disabled={readOnly}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border transition",
+              "fm-tag-chip inline-flex items-center gap-1.5 rounded-full border",
               padX, padY, text,
               selected
-                ? "bg-foreground text-background border-foreground"
-                : "bg-background text-foreground border-border hover:border-foreground/40",
+                ? "fm-tag-chip-selected bg-foreground text-background border-foreground"
+                : "fm-tag-chip-unselected bg-background text-foreground border-border hover:border-foreground/40",
               readOnly && "cursor-default"
             )}
           >
@@ -93,7 +93,7 @@ export function TagSelector({ selectedIds, onChange, readOnly, size = "md" }: Pr
             type="button"
             onClick={() => setAdding(true)}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/40 transition",
+              "fm-interactive inline-flex items-center gap-1 rounded-full border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
               padX, padY, text
             )}
           >
