@@ -118,3 +118,120 @@
     @apply border border-border;
   }
 }
+
+.theme-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: hsl(var(--background) / 0.16);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+  animation: theme-overlay-fade 650ms ease both;
+}
+
+.theme-transition-center {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: grid;
+  place-items: center;
+}
+
+.theme-transition-icon-wrap {
+  width: 110px;
+  height: 110px;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 18px 50px hsl(var(--foreground) / 0.14);
+  animation: theme-icon-pop 230ms ease-out forwards, theme-icon-fade 360ms ease-in 260ms forwards;
+}
+
+.theme-transition-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.theme-transition-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.theme-transition-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  border-radius: 9999px;
+  background: var(--particle-color);
+  opacity: 0;
+  transform: translate(0, 0) scale(0.7);
+  animation: theme-particle-burst 430ms ease-out var(--particle-delay) forwards,
+    theme-particle-fade 280ms ease-in calc(var(--particle-delay) + 250ms) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes theme-overlay-fade {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes theme-icon-pop {
+  0% {
+    transform: scale(0.88);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes theme-icon-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes theme-particle-burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.75;
+    transform: translate(var(--tx), var(--ty)) scale(1);
+  }
+}
+
+@keyframes theme-particle-fade {
+  0% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
+}

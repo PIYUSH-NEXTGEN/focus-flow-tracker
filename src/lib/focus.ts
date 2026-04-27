@@ -33,6 +33,15 @@ export interface SessionWithTags extends SessionRow {
   tags: TagRow[];
 }
 
+export interface SessionRecord {
+  startTime: string;
+  endTime: string;
+  duration: number;
+  tags: string[];
+  mode: Mode;
+  date: string;
+}
+
 export const GRAPH_COLORS = [
   "hsl(var(--graph-green))",
   "hsl(var(--graph-blue))",
@@ -88,7 +97,21 @@ export function secondsToUnit(seconds: number, unit: TimeUnit): number {
 
 export function formatDuration(seconds: number, unit: TimeUnit): string {
   const value = secondsToUnit(seconds, unit);
-  return value.toFixed(2) + (unit === "minutes" ? " min" : " hr");
+  return Number(value.toFixed(2)) + (unit === "minutes" ? " min" : " hr");
+}
+
+export function formatTime(totalSeconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const seconds = safeSeconds % 60;
+  const minutes = Math.floor((safeSeconds / 60) % 60);
+  const hours = Math.floor(safeSeconds / 3600);
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+
+  return `${pad(minutes)}:${pad(seconds)}`;
 }
 
 export function totalPausedMs(events: PauseEvent[], nowMs: number): number {
@@ -108,16 +131,27 @@ export function isPaused(events: PauseEvent[]): boolean {
 export function localDayKey(d: Date | string): string {
   let date: Date;
   if (typeof d === "string") {
-    // ISO strings are in UTC, extract local date components
     const iso = new Date(d);
-    // Convert UTC to local time
-    const localDate = new Date(iso.getTime() - iso.getTimezoneOffset() * 60000);
-    date = localDate;
+    date = new Date(iso.getTime() - iso.getTimezoneOffset() * 60000);
   } else {
     date = d;
   }
-  const y = date.getFullYear();
-  const m = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
+  const y = date.getUTCFullYear();
+  const m = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+  const day = date.getUTCDate().toString().padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+export function isToday(dateString: string, today = new Date()): boolean {
+  const d = new Date(dateString);
+
+  if (Number.isNaN(d.getTime())) {
+    return false;
+  }
+
+  return (
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+  );
 }

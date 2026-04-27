@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSessions } from "@/hooks/useFocusData";
-import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
+import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, formatTime, type TimeUnit } from "@/lib/focus";
 import { useTimeUnit } from "@/hooks/useTimeUnit";
 import { Button } from "@/components/ui/button";
 import { SessionEditDialog } from "../focus/SessionEditDialog";
@@ -347,7 +347,7 @@ function DayPanel({
                 </div>
               </div>
               <span className="font-mono-num text-sm">
-                {formatDuration(s.duration_seconds, unit)}
+                {formatTime(s.duration_seconds)}
               </span>
             </button>
           </li>

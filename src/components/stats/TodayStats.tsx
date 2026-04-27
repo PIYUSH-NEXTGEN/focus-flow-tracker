@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useSessions } from "@/hooks/useFocusData";
-import { colorForTag, formatHumanDuration, localDayKey, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
+import { colorForTag, formatHumanDuration, type SessionWithTags, formatDuration, type TimeUnit } from "@/lib/focus";
 import { useTimeUnit } from "@/hooks/useTimeUnit";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
@@ -30,28 +30,46 @@ function tagDistribution(sessions: SessionWithTags[]) {
 export function TodayStats({ date }: Props) {
   const { data: sessions = [] } = useSessions();
   const [unit] = useTimeUnit();
-  const day = date ?? new Date();
-  const dayKey = localDayKey(day);
 
-  const todays = useMemo(
-    () => sessions.filter((s) => localDayKey(s.start_time) === dayKey),
-    [sessions, dayKey]
-  );
+  const isToday = (dateString: string): boolean => {
+    const d = new Date(dateString);
+    const today = date ?? new Date();
 
-  const totalSec = todays.reduce((a, s) => a + s.duration_seconds, 0);
-  const timerCount = todays.filter((s) => s.mode === "timer").length;
-  const stopwatchCount = todays.filter((s) => s.mode === "stopwatch").length;
+    return (
+      d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth() &&
+      d.getDate() === today.getDate()
+    );
+  };
 
-  const dist = useMemo(() => tagDistribution(todays), [todays]);
+  const todaysSessions = useMemo(() => {
+    const todaysSessions = sessions.filter((s) => {
+      // Incomplete sessions are excluded from today's completed totals.
+      if (!s.end_time) return false;
+      return isToday(s.start_time);
+    });
+
+    console.log("All sessions:", sessions);
+    console.log("Today's sessions:", todaysSessions);
+
+    return todaysSessions;
+  }, [date, sessions]);
+
+  const totalSec = todaysSessions.reduce((sum, session) => sum + session.duration_seconds, 0);
+  console.log("Total seconds:", totalSec);
+  const timerCount = todaysSessions.filter((s) => s.mode === "timer").length;
+  const stopwatchCount = todaysSessions.filter((s) => s.mode === "stopwatch").length;
+
+  const dist = useMemo(() => tagDistribution(todaysSessions), [todaysSessions]);
 
   return (
     <div className="grid gap-6 md:grid-cols-3">
       <StatCard label="Total focus" value={formatDuration(totalSec, unit)} />
-      <StatCard label="Sessions" value={todays.length.toString()} />
+      <StatCard label="Sessions" value={todaysSessions.length.toString()} />
       <StatCard
         label="Mode"
         value={
-          todays.length === 0
+          todaysSessions.length === 0
             ? "—"
             : `${timerCount} timer · ${stopwatchCount} stopwatch`
         }

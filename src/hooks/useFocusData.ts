@@ -114,7 +114,10 @@ export function useCreateSession() {
       }
       return sessionId;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sessions"] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["sessions"] });
+      await qc.refetchQueries({ queryKey: ["sessions"] });
+    },
   });
 }
 

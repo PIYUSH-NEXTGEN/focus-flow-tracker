@@ -5,8 +5,7 @@ import { CircularProgress } from "./CircularProgress";
 import { TagSelector } from "./TagSelector";
 import { useFocusTimer, type ActiveSession } from "@/hooks/useFocusTimer";
 import { useCreateSession } from "@/hooks/useFocusData";
-import { formatHMS, parseHMS, type Mode, formatDuration, type TimeUnit } from "@/lib/focus";
-import { useTimeUnit } from "@/hooks/useTimeUnit";
+import { formatHMS, parseHMS, type Mode, formatTime, type SessionRecord } from "@/lib/focus";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SessionEditDialog } from "./SessionEditDialog";
@@ -14,7 +13,6 @@ import { SessionEditDialog } from "./SessionEditDialog";
 export function FocusStation() {
   const timer = useFocusTimer();
   const createSession = useCreateSession();
-  const [unit] = useTimeUnit();
 
   const [mode, setMode] = useState<Mode>("timer");
   const [hms, setHms] = useState("00:25:00");
@@ -33,13 +31,13 @@ export function FocusStation() {
 
   const display = useMemo(() => {
     if (!timer.active) {
-      return mode === "timer" ? formatDuration(targetSeconds, unit) : formatDuration(0, unit);
+      return mode === "timer" ? formatTime(targetSeconds) : formatTime(0);
     }
     if (timer.active.mode === "timer" && timer.active.targetSeconds !== null) {
-      return formatDuration(Math.max(0, timer.active.targetSeconds - timer.elapsedSeconds), unit);
+      return formatTime(Math.max(0, timer.active.targetSeconds - timer.elapsedSeconds));
     }
-    return formatDuration(timer.elapsedSeconds, unit);
-  }, [timer.active, timer.elapsedSeconds, mode, targetSeconds, unit]);
+    return formatTime(timer.elapsedSeconds);
+  }, [timer.active, timer.elapsedSeconds, mode, targetSeconds]);
 
   const progress = useMemo(() => {
     if (!timer.active) return mode === "timer" ? 0 : null;
@@ -78,26 +76,47 @@ export function FocusStation() {
   };
 
   const persistSession = async (s: ActiveSession) => {
-    const endMs = Date.now();
+    const nowMs = Date.now();
+    const startDate = new Date(s.startMs);
+    const endDate = new Date(nowMs);
+    const startTime = startDate.toISOString();
+    const endTime = endDate.toISOString();
     // Recompute paused total accurately for end timestamp
     const totalPaused = s.pauseEvents.reduce(
-      (acc, ev) => acc + Math.max(0, (ev.resumed_at ?? endMs) - ev.paused_at),
+      (acc, ev) => acc + Math.max(0, (ev.resumed_at ?? nowMs) - ev.paused_at),
       0
     );
-    let durationSec = Math.max(0, (endMs - s.startMs - totalPaused) / 1000);
-    // For timer that hit target, cap at target.
-    if (s.mode === "timer" && s.targetSeconds) {
-      durationSec = Math.min(durationSec, s.targetSeconds);
+    const rawDuration = (endDate.getTime() - startDate.getTime() - totalPaused) / 1000;
+    let durationSec = Number(Math.max(0, rawDuration).toFixed(2));
+
+    if (!Number.isFinite(durationSec)) {
+      durationSec = 0;
     }
+
+    if (s.mode === "timer" && s.targetSeconds) {
+      durationSec = Number(Math.min(durationSec, s.targetSeconds).toFixed(2));
+    }
+
+    const sessionRecord: SessionRecord = {
+      startTime,
+      endTime,
+      duration: durationSec,
+      tags: s.selectedTagIds,
+      mode: s.mode,
+      date: startTime,
+    };
+
+    console.log("Created session:", sessionRecord);
+
     try {
       const id = await createSession.mutateAsync({
-        mode: s.mode,
-        start_time: new Date(s.startMs).toISOString(),
-        end_time: new Date(s.startMs + durationSec * 1000 + totalPaused).toISOString(),
-        duration_seconds: durationSec,
+        mode: sessionRecord.mode,
+        start_time: sessionRecord.startTime,
+        end_time: sessionRecord.endTime,
+        duration_seconds: sessionRecord.duration,
         target_seconds: s.targetSeconds,
         pause_events: s.pauseEvents,
-        tag_ids: s.selectedTagIds,
+        tag_ids: sessionRecord.tags,
       });
       toast.success("Session saved");
       setEditId(id);
